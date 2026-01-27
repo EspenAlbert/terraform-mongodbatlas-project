@@ -42,6 +42,70 @@ variable "limits" {
   default = {}
 }
 
+variable "ip_access_list" {
+  description = <<-EOT
+  IP access list entries for the Atlas project. Each "source" maps to one of: cidrBlock, ipAddress, or
+  awsSecurityGroup.
+  
+  Note: When using AWS security group IDs, the value must be known at plan time. If the ID is created in the same apply, Terraform will fail.
+
+  Example:
+  ip_access_list = [
+    { source = "203.0.113.0/24", comment = "Office VPN" },
+    { source = "198.51.100.10" },
+    { source = "sg-0123456789abcdef0" }
+  ]
+  EOT
+  type = list(object({
+    source  = string
+    comment = optional(string)
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for entry in var.ip_access_list : (
+        can(cidrhost(entry.source, 0)) ||
+        can(regex("^sg-[0-9a-fA-F]+$", entry.source)) ||
+        can(cidrhost("${entry.source}/32", 0)) ||
+        can(cidrhost("${entry.source}/128", 0))
+      )
+    ])
+    error_message = "ip_access_list.source values must be valid CIDR blocks, IP addresses, or AWS security group IDs (sg-...)."
+  }
+}
+
+variable "maintenance_window" {
+  description = <<-EOT
+  Maintenance window configuration for the Atlas project.
+  - Typically, you don't need to manually configure a maintenance window; Atlas performs maintenance automatically in a rolling manner to preserve continuous availability for resilient applications.
+  https://www.mongodb.com/docs/atlas/tutorial/cluster-maintenance-window/
+  - To temporarily defer maintenance, use the Atlas CLI/API. See `atlas maintenanceWindows defer` documentation.
+  https://www.mongodb.com/docs/atlas/cli/current/command/atlas-maintenanceWindows-defer/#atlas-maintenancewindows-defer
+  EOT
+  type = object({
+    enabled                 = bool
+    day_of_week             = optional(number)
+    hour_of_day             = optional(number)
+    auto_defer              = optional(bool, false)
+    auto_defer_once_enabled = optional(bool, false)
+    protected_hours = optional(object({
+      start_hour_of_day = number
+      end_hour_of_day   = number
+    }))
+  })
+  default  = { enabled = false }
+  nullable = false
+
+  validation {
+    condition = (
+      !var.maintenance_window.enabled ||
+      (var.maintenance_window.day_of_week != null && var.maintenance_window.hour_of_day != null)
+    )
+    error_message = "When maintenance_window.enabled is true, day_of_week and hour_of_day must both be set."
+  }
+}
+
 variable "with_default_alerts_settings" {
   type        = bool
   description = "Flag that indicates whether to create the project with default alert settings."

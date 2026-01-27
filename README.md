@@ -53,22 +53,21 @@ Run 'just docs' to regenerate.
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9)
 
-- <a name="requirement_mongodbatlas"></a> [mongodbatlas](#requirement\_mongodbatlas) (~> 2.0)
+- <a name="requirement_mongodbatlas"></a> [mongodbatlas](#requirement\_mongodbatlas) (~> 2.1)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_mongodbatlas"></a> [mongodbatlas](#provider\_mongodbatlas) (~> 2.0)
+- <a name="provider_mongodbatlas"></a> [mongodbatlas](#provider\_mongodbatlas) (~> 2.1)
 
 ## Resources
 
 The following resources are used by this module:
 
 - [mongodbatlas_project.this](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/project) (resource)
-- [mongodbatlas_project.this](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/data-sources/project) (data source)
 
 <!-- BEGIN_TF_INPUTS_RAW -->
 <!-- @generated
@@ -158,6 +157,63 @@ Default: `{}`
 
 ## Optional Variables
 
+### ip_access_list
+
+IP access list entries for the Atlas project. Each "source" maps to one of: cidrBlock, ipAddress, or
+awsSecurityGroup.
+
+Note: When using AWS security group IDs, the value must be known at plan time. If the ID is created in the same apply, Terraform will fail.
+
+Example:
+ip_access_list = [
+  { source = "203.0.113.0/24", comment = "Office VPN" },
+  { source = "198.51.100.10" },
+  { source = "sg-0123456789abcdef0" }
+]
+
+Type:
+
+```hcl
+list(object({
+  source  = string
+  comment = optional(string)
+}))
+```
+
+Default: `[]`
+
+### maintenance_window
+
+Maintenance window configuration for the Atlas project.
+- Typically, you don't need to manually configure a maintenance window; Atlas performs maintenance automatically in a rolling manner to preserve continuous availability for resilient applications.
+https://www.mongodb.com/docs/atlas/tutorial/cluster-maintenance-window/
+- To temporarily defer maintenance, use the Atlas CLI/API. See `atlas maintenanceWindows defer` documentation.
+https://www.mongodb.com/docs/atlas/cli/current/command/atlas-maintenanceWindows-defer/#atlas-maintenancewindows-defer
+
+Type:
+
+```hcl
+object({
+  enabled                 = bool
+  day_of_week             = optional(number)
+  hour_of_day             = optional(number)
+  auto_defer              = optional(bool, false)
+  auto_defer_once_enabled = optional(bool, false)
+  protected_hours = optional(object({
+    start_hour_of_day = number
+    end_hour_of_day   = number
+  }))
+})
+```
+
+Default:
+
+```json
+{
+  "enabled": false
+}
+```
+
 ### tags
 
 Map of tags to assign to the project.
@@ -172,17 +228,21 @@ Default: `{}`
 
 The following outputs are exported:
 
-### <a name="output_project"></a> [project](#output\_project)
+### <a name="output_cluster_count"></a> [cluster\_count](#output\_cluster\_count)
 
-Description: MongoDB Atlas project details
+Description: MongoDB Atlas project cluster count.
 
-### <a name="output_project_limits"></a> [project\_limits](#output\_project\_limits)
+### <a name="output_created_at"></a> [created\_at](#output\_created\_at)
 
-Description: All project limits returned by Atlas for the project. Limit name is the key, value is a map of limit details.
+Description: MongoDB Atlas project creation time (RFC3339).
 
-### <a name="output_project_settings"></a> [project\_settings](#output\_project\_settings)
+### <a name="output_id"></a> [id](#output\_id)
 
-Description: All project settings returned by Atlas for the project
+Description: MongoDB Atlas project ID.
+
+### <a name="output_maintenance_window"></a> [maintenance\_window](#output\_maintenance\_window)
+
+Description: Maintenance window details.
 <!-- END_TF_DOCS -->
 
 ## License
