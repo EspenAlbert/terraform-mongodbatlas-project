@@ -40,9 +40,9 @@ Run 'just gen-readme' to regenerate. -->
 
 Feature | Name
 --- | ---
-Project Setup | [Basic Project with Settings and Limits](./examples/basic)
-IP Access List | [Development Project with IP Allowlist](./examples/dev_with_allowlist)
-Production Baseline | [Production Secure Baseline with Maintenance Window](./examples/prod_secure_baseline)
+Project Setup | [Basic Project with Settings and Limits](https://github.com/EspenAlbert/terraform-mongodbatlas-project/blob/v0.0.1/examples/basic)
+IP Access List | [Development Project with IP Allowlist](https://github.com/EspenAlbert/terraform-mongodbatlas-project/blob/v0.0.1/examples/dev_with_allowlist)
+Production Baseline | [Production Secure Baseline with Maintenance Window](https://github.com/EspenAlbert/terraform-mongodbatlas-project/blob/v0.0.1/examples/prod_secure_baseline)
 
 <!-- END_TABLES -->
 <!-- BEGIN_TF_DOCS -->
@@ -253,4 +253,4 @@ Description: Maintenance window details.
 
 ## License
 
-See [LICENSE](LICENSE) for full details.
+See [LICENSE](https://github.com/EspenAlbert/terraform-mongodbatlas-project/blob/v0.0.1/LICENSE) for full details.
