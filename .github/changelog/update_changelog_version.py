@@ -1,4 +1,3 @@
-# path-sync copy -n sdlc
 """Update CHANGELOG.md with version and current date."""
 
 import re
@@ -19,11 +18,27 @@ def get_current_date() -> str:
     return datetime.now().strftime("%B %d, %Y")
 
 
+def create_initial_changelog(
+    changelog_path: Path, version: str, current_date: str
+) -> None:
+    """Create initial CHANGELOG.md for first release."""
+    content = f"""## (Unreleased)
+
+## {version} ({current_date})
+
+NOTES:
+
+* module: Initial version
+"""
+    changelog_path.write_text(content, encoding="utf-8")
+    print(f"Created CHANGELOG.md with initial version {version} ({current_date})")
+
+
 def update_changelog(changelog_path: Path, version: str, current_date: str) -> None:
     """Update CHANGELOG.md with version and current date."""
     if not changelog_path.exists():
-        print(f"Error: File not found: {changelog_path}", file=sys.stderr)
-        sys.exit(1)
+        create_initial_changelog(changelog_path, version, current_date)
+        return
 
     content = changelog_path.read_text(encoding="utf-8")
 
@@ -41,7 +56,9 @@ def update_changelog(changelog_path: Path, version: str, current_date: str) -> N
         return
 
     new_header = f"## (Unreleased)\n\n## {version} ({current_date})"
-    new_content = re.sub(unreleased_pattern, new_header, content, count=1, flags=re.MULTILINE)
+    new_content = re.sub(
+        unreleased_pattern, new_header, content, count=1, flags=re.MULTILINE
+    )
     changelog_path.write_text(new_content, encoding="utf-8")
     print(f"Updated CHANGELOG.md: Added {version} ({current_date})")
 
@@ -64,3 +81,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
